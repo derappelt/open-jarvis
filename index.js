@@ -1,3 +1,4 @@
+const fs = require('fs');
 const {Detector, Models} = require('snowboy');
 const record = require('node-record-lpcm16');
 const stream = require('stream');
@@ -32,18 +33,6 @@ let mic = {};
 let listening = false;
 let talking = false;
 
-function say(msg){
-  talking = true;
-  console.log('talking');
-  let child = exec(`say ${msg}`)
-  child.on('exit', ()=> {
-    setTimeout(()=>{
-      talking = false;
-      console.log('Stop talking');
-    },250);
-  });
-}
-
 function startStreaming(){
   listening = true;
   player.play('res/ding.wav');
@@ -72,28 +61,20 @@ function startStreaming(){
         empty = false;
         if(data.results[0].isFinal === true){
           let transcript = data.results[0].alternatives[0].transcript;
-          console.log('User:', transcript);
 
           let request = apiAiApp.textRequest(transcript, {
             sessionId: '<unique session id>'
           });
           request.on('response', function(response) {
-
-          switch (response.result.action) {
-            case 'search-weather':
-              say("Heute ist viel Wetter");
-              break;
-            case 'repeat':
-              say(response.result.parameters.msg || "Du hast nichts gesagt! Dummkopf!");
-              break;
-            default:
-              say(response.result.fulfillment.speech);
-              break;
-          }
-
-            // console.log(JSON.stringify(response, null, 2));
-            console.log('Jarvis:', response.result.fulfillment.speech);
-            
+            talking = true;
+            let actionString = response.result.action;
+            let path = `./actions/${actionString.replace('.', '/')}.js`;
+            fs.exists(path, (exists)=>{
+              let action = (exists) ? require(path) : require('./actions/default');
+              action(response).then(()=>{
+                talking = false;
+              });
+            });
           });
           request.on('error', function(error) {
             console.log(error);
