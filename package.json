@@ -14,6 +14,8 @@
     "apiai": "^4.0.3",
     "node-record-lpcm16": "^0.3.0",
     "play-sound": "^1.1.1",
+    "request": "^2.81.0",
+    "request-promise-native": "^1.0.4",
     "snowboy": "^1.1.0"
   }
 }

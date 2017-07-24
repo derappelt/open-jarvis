@@ -61,7 +61,7 @@ function startStreaming(){
         empty = false;
         if(data.results[0].isFinal === true){
           let transcript = data.results[0].alternatives[0].transcript;
-
+          console.log('User:', transcript);
           let request = apiAiApp.textRequest(transcript, {
             sessionId: '<unique session id>'
           });
